@@ -1,0 +1,16 @@
+/* src/App.css */
+body {
+    margin: 0;
+    background-color: #282c34;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    overflow: hidden; /* Prevent horizontal scrollbar */
+}
+
+/* Add any global styles here */
+
+/* If you have any other global styles or resets, you can include them here */
+
+/* styles.css */
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');

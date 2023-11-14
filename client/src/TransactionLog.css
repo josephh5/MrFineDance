@@ -1,0 +1,14 @@
+/* Add styling for the neat boxes with shadows */
+.log-row {
+    background-color: #fff; /* Background color for each row */
+    border: 1px solid #e0e0e0; /* Border to separate rows */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Slight shadow effect */
+    padding: 15px; /* Spacing inside each box */
+    margin-bottom: 10px; /* Spacing between rows */
+}
+
+    /* Styling for the horizontal line separating rows */
+    .log-row + .log-row {
+        margin-top: 10px;
+    }
