@@ -6,6 +6,7 @@ function SearchStock() {
   const [activeTab, setActiveTab] = useState(/* initial active tab value */);
   const [searchSymbol, setSearchSymbol] = useState('');
   const [stockValue, setStockValue] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -20,9 +21,19 @@ function SearchStock() {
 
       // Update state with stock information
       setStockValue(stockValueFromServer);
+      setErrorMessage('');
     } catch (error) {
       console.error('Error searching stock:', error);
+
       // Handle any errors, e.g., display an error message to the user
+      if (error.response && error.response.status === 404) {
+        setErrorMessage('Stock not found. Please try again.');
+      } else {
+        setErrorMessage('An error occurred while searching for the stock. Please try again later.');
+      }
+
+      // Clear the stock value in case there was a previous successful search
+      setStockValue(null);
     }
   };
 
@@ -64,10 +75,14 @@ function SearchStock() {
         />
         <button onClick={handleSearch}>Search</button>
       </div>
-      {stockValue && (
+      {errorMessage && (
+        <div className="error-message-container">
+          <p>{errorMessage}</p>
+        </div>
+      )}
+      {stockValue && !errorMessage && (
         <div className="stock-value-container">
           <p>Stock Symbol: {stockValue.stock_symbol}</p>
-          <p>Stock Name: {stockValue.stock_name}</p>
           <p>Current Price: {stockValue.current_price}</p>
           <p>DateTime of Price: {stockValue.datetime_of_price}</p>
         </div>

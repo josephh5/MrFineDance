@@ -11,17 +11,19 @@ const TrackSell = () => {
   const [stockSymbol, setStockSymbol] = useState('');
   const [stockName, setStockName] = useState('');
   const [sellPrice, setSellPrice] = useState('');
-  const [sellDate, setSellDate] = useState('');
+  const [sellDate, setSellDate] = useState(new Date());
   const [notes, setNotes] = useState('');
 
   const handleSave = () => {
+    const formattedDate = sellDate instanceof Date ? sellDate.toISOString().split('T')[0] : '';
+
     axios.post('http://127.0.0.1:5000/TrackSell', {
     shares: shares,
     basis: basis,
     stockSymbol: stockSymbol,
     stockName: stockName,
     sellPrice: sellPrice,
-    sellDate: sellDate,
+    sellDate: formattedDate,
     notes: notes,
   })
     clearInputFields();
@@ -71,7 +73,11 @@ const TrackSell = () => {
           </label>
           <label>
             Sell Date:
-            <input type="text" value={sellDate} onChange={(e) => setSellDate(e.target.value)} />
+            <input
+              type="date"
+              value={sellDate instanceof Date ? sellDate.toISOString().split('T')[0] : ''}
+              onChange={(e) => setSellDate(new Date(e.target.value))}
+            />
           </label>
           <label>
             Notes:

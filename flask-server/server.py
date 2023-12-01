@@ -10,6 +10,7 @@ from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import relationship
 from uuid import uuid4
 import os
+from sqlalchemy import or_
 
 db = SQLAlchemy()
 
@@ -258,22 +259,23 @@ def logSellDailyInfo(username):
 
 @app.route("/login", methods=["POST"])
 def login():
-    username = request.json["username"]
+    identifier = request.json["username"]  # Use 'username' as the identifier for both username and email
     password = request.json["password"]
 
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter(or_(User.username == identifier, User.email == identifier)).first()
 
     if user is None:
-        print("Username or password does not exist")
-        return jsonify({"error": "Username does not exist!"})
+        print("Username or email does not exist")
+        return jsonify({"error": "Username or email does not exist!"})
     elif user.password == password:
         print("Success")
         with open('.usr', 'w') as file:
-            file.write(username)
+            file.write(user.username)  # Write the username from the retrieved user object
         return 'User logged in'
     else:
-        print("Username or password does not exist")
+        print("Username or email exists, but the password is incorrect")
         return jsonify({"error": "Wrong Password!"})
+
     
 def get_stock_data(symbol):
     latest_price = None
@@ -408,7 +410,7 @@ def forgotPassword():
         return jsonify({'error': 'User not found'}), 404
     
 @app.route('/SearchStock', methods=['POST'])
-def searchStockValue():
+def search_stock_value():
     data = request.json
     stock_symbol = data.get('symbol')
 
@@ -429,11 +431,23 @@ def searchStockValue():
 
             return jsonify({'stockValue': stock_info})
         else:
-            return jsonify({'error': 'Stock not found'}), 404
+            # Call Yahoo Finance API for the stock symbol
+            latest_price = get_stock_data(stock_symbol)
+
+            if latest_price is not None:
+                # Return the stock information without storing it in the database
+                stock_info = {
+                    'stock_symbol': stock_symbol,
+                    'stock_name': "",  # Set company name to an empty string
+                    'current_price': latest_price,
+                    'datetime_of_price': str(datetime.now()),  # Use current datetime
+                }
+
+                return jsonify({'stockValue': stock_info})
+            else:
+                return jsonify({'error': 'Stock not found in the Yahoo Finance API'}), 404
     else:
-        return jsonify({'error': 'Stock symbol not provided'}), 400
-
-
+        return jsonify({'error': 'Invalid request'}), 400
 
 
 if __name__ == '__main__':

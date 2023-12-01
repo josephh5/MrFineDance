@@ -8,18 +8,20 @@ const TrackBuy = () => {
   const [stockSymbol, setStockSymbol] = useState('');
   const [stockName, setStockName] = useState('');
   const [buyPrice, setBuyPrice] = useState('');
-  const [buyDate, setBuyDate] = useState('');
+  const [buyDate, setBuyDate] = useState(new Date());
   const [notes, setNotes] = useState('');
 
   const [logs, setLogs] = useState([]);
 
   const handleSave = () => {
+    const formattedDate = buyDate instanceof Date ? buyDate.toISOString().split('T')[0] : '';
+
     axios.post('http://127.0.0.1:5000/TrackBuy', {
     shares: shares,
     stockSymbol: stockSymbol,
     stockName: stockName,
     buyPrice: buyPrice,
-    buyDate: buyDate,
+    buyDate: formattedDate,
     notes: notes,
   })
     // Clear input fields after saving
@@ -77,7 +79,11 @@ const TrackBuy = () => {
         </label>
         <label>
           Buy Date:
-          <input type="text" value={buyDate} onChange={(e) => setBuyDate(e.target.value)} />
+          <input
+            type="date"
+            value={buyDate instanceof Date ? buyDate.toISOString().split('T')[0] : ''}
+            onChange={(e) => setBuyDate(new Date(e.target.value))}
+          />
         </label>
         <label>
           Notes:

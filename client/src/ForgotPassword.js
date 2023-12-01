@@ -16,22 +16,39 @@ const ForgotPassword = () => {
 
     const handleUsernameEmailSubmit = async (e) => {
         e.preventDefault();
-        
+
         try {
             const response = await axios.post('http://127.0.0.1:5000/getSecurityQuestion', {
                 username: usernameInput,
                 email: emailInput,
             });
-        
+
             const securityQuestionFromServer = response.data.securityQuestion;
-        
+
             console.log('Security Question:', securityQuestionFromServer);
-    
-            setSecurityQuestion(securityQuestionFromServer);
+
+            // Use setTimeout to allow time for state update and re-render
+            setTimeout(() => {
+                setSecurityQuestion(securityQuestionFromServer);
+                setError(null);
+            }, 0);
+
+            console.log('Before navigation');
+            // Comment out the navigation temporarily to see if it logs
+            // navigate('/login');
         } catch (error) {
-            setError('Error fetching security question. Please try again.');
+            console.error('Error fetching security question:', error);
+
+            // Use setTimeout to allow time for state update and re-render
+            setTimeout(() => {
+                setSecurityQuestion(null);
+                setError('Invalid username or email. Please try again.');
+            }, 0);
         }
+        console.log('After try-catch block');
     };
+    
+    
     
 
     const handleSecuritySubmit = async (e) => {
@@ -69,6 +86,7 @@ const ForgotPassword = () => {
             setError('An error occurred while resetting the password. Please try again.');
         }
     };
+    
     
 
     return (
@@ -110,7 +128,6 @@ const ForgotPassword = () => {
                             required
                         />
                     </div>
-                    {error && <p className="error-message">{error}</p>}
                     <div className="form-group">
                         <button type="submit">Reset Password</button>
                     </div>
@@ -143,6 +160,7 @@ const ForgotPassword = () => {
                     </div>
                 </form>
             )}
+            {error && <p className="error-message">{error}</p>}
         </div>
     );
 };
