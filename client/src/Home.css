@@ -52,12 +52,23 @@
   font-size: 24px; /* Adjust the size as needed */
 }
 
+.stock-container {
+  display: flex;
+}
+
 .top-5-stocks {
 display: flex;
-flex-wrap: wrap;
-justify-content: space-evenly;
+flex-direction: column;
 padding: 20px;
 background-color: #f4f4f4;
+gap: 20px;
+}
+
+.graph-container {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    margin-left: 80px;
 }
 
 .stock-card {

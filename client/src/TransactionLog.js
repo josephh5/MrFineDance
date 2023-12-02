@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import NavbarLoggedIn from './NavbarLoggedIn';
 import './TransactionLog.css';
-import { Line } from 'react-chartjs-2';
-import { Chart }  from 'chart.js/auto';
 
 const TransactionLog = () => {
     const [buyTransactions, setBuyTransactions] = useState([]);
@@ -11,8 +9,6 @@ const TransactionLog = () => {
     const [activeTab, setActiveTab] = useState('TransactionLog');
     const [totalAmountSpent, setTotalAmountSpent] = useState(0);
     const [totalAmountMade, setTotalAmountMade] = useState(0);
-    const [historicalData, setHistoricalData] = useState({});
-    const [error, setError] = useState(null);
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
@@ -59,96 +55,6 @@ const TransactionLog = () => {
     }, []);
 
 
-    useEffect(() => {
-        const fetchHistoricalDataForTransactions = async () => {
-            try {
-                const buyPromises = buyTransactions.map(async (row) => {
-                    const response = await axios.get(`http://127.0.0.1:5000/getHistoricalData?symbol=${row.stock_symbol}`);
-                    return {
-                        id: row.transaction_id,
-                        isBuy: true,
-                        data: response.data,
-                    };
-                });
-
-                const sellPromises = sellTransactions.map(async (row) => {
-                    const response = await axios.get(`http://127.0.0.1:5000/getHistoricalData?symbol=${row.stock_symbol}`);
-                    return {
-                        id: row.receipt_id,
-                        isBuy: false,
-                        data: response.data,
-                    };
-                });
-
-                const allPromises = [...buyPromises, ...sellPromises];
-                const results = await Promise.all(allPromises);
-
-                const newData = results.reduce((acc, { id, isBuy, data }) => {
-                    acc[isBuy ? `buy-${id}` : `sell-${id}`] = data;
-                    return acc;
-                }, {});
-                console.log("NewData: ", newData);
-
-                // Set the historical data first
-                setHistoricalData((prevData) => ({
-                    ...prevData,
-                    ...newData,
-                }));
-
-                // Now, create charts for each data set
-                Object.entries(newData).forEach(([key, data]) => {
-                    const [type, id] = key.split('-');
-                    const canvas = document.getElementById(key);
-                    const ctx = canvas.getContext('2d');
-
-                    // Destroy existing chart before rendering a new one
-                    if (canvas.chart) {
-                        canvas.chart.destroy();
-                    }
-
-                    canvas.chart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.timestamp,
-                            datasets: [
-                                {
-                                    label: 'Closing Price',
-                                    data: data.indicators.quote.map(entry => entry.close),
-                                    fill: false,
-                                    borderColor: 'rgb(75, 192, 192)',
-                                },
-                            ],
-                        },
-                    });
-                });
-
-            } catch (error) {
-                console.error('Error fetching historical data:', error);
-            }
-        };
-
-        fetchHistoricalDataForTransactions();
-    }, [buyTransactions, sellTransactions]);
-
-
-
-    const renderLineChart = (id, labels, data) => {
-        console.log('Data in renderLineChart:', data);
-        console.log("Labels in renderLineChart: ", labels)
-
-        if (!labels || !data) {
-            return <p style={{ color: 'red' }}>No historical data found.</p>;
-        }
-
-        return (
-            <div style={{ position: 'relative', width: '100%', height: '300px' }}>
-                <canvas id={id} />
-            </div>
-        );
-
-    };
-
-
 
     return (
         <div className="transaction-log-container">
@@ -176,9 +82,6 @@ const TransactionLog = () => {
                                     <div>Buy Price: ${row.buy_price}</div>
                                     <div>Buy Date: {row.buy_date}</div>
                                     <div>Notes: {row.notes}</div>
-                                    <div className="historical-data">
-                                        {renderLineChart(`buy-${row.transaction_id}`, historicalData[`buy-${row.transaction_id}`]?.timestamp, historicalData[`buy-${row.transaction_id}`]?.indicators.quote.map(entry => entry.close))}
-                                    </div>
                                 </div>
                             </div>
                         ))
@@ -200,9 +103,6 @@ const TransactionLog = () => {
                                     <div>Sell Price: ${row.sell_price}</div>
                                     <div>Sell Date: {row.sell_date}</div>
                                     <div>Notes: {row.notes}</div>
-                                    <div className="historical-data">
-                                        {renderLineChart(`sell-${row.receipt_id}`, historicalData[`sell-${row.receipt_id}`]?.timestamp, historicalData[`sell-${row.receipt_id}`]?.indicators.quote.map(entry => entry.close))}
-                                    </div>
                                 </div>
                             </div>
                         ))

@@ -345,7 +345,7 @@ def get_historical_data():
 
         # Fetch historical data from Yahoo Finance
         stock = yf.Ticker(symbol)
-        historical_data = stock.history(period='max')
+        historical_data = stock.history(period='2y')
 
         # Convert historical data to a format suitable for the frontend
         historical_data_dict = {

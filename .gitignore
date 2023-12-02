@@ -64,3 +64,9 @@ node_modules/
 
 # dotenv environment variables file
 .env
+
+# Visual Studio files
+.vs
+
+# .usr file
+.usr
