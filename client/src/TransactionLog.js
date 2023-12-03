@@ -54,7 +54,31 @@ const TransactionLog = () => {
             });
     }, []);
 
+    const handleDeleteBuyTransaction = (transactionId) => {
+        axios.post(`http://127.0.0.1:5000/deleteBuyTransaction?transaction_id=${transactionId}`)
+            .then((response) => {
+                // Remove the deleted transaction from the buyTransactions list
+                const updatedBuyTransactions = buyTransactions.filter((transaction) => transaction.transaction_id !== transactionId);
+                setBuyTransactions(updatedBuyTransactions);
+                console.log('Buy transaction deleted:', response.data);
+            })
+            .catch((error) => {
+                console.error('Error deleting buy transaction:', error);
+            });
+    };
 
+    const handleDeleteSellTransaction = (receiptId) => {
+        axios.post(`http://127.0.0.1:5000/deleteSellTransaction?receipt_id=${receiptId}`)
+            .then((response) => {
+                // Remove the deleted transaction from the sellTransactions list
+                const updatedSellTransactions = sellTransactions.filter((transaction) => transaction.receipt_id !== receiptId);
+                setSellTransactions(updatedSellTransactions);
+                console.log('Sell transaction deleted:', response.data);
+            })
+            .catch((error) => {
+                console.error('Error deleting sell transaction:', error);
+            });
+    };
 
     return (
         <div className="transaction-log-container">
@@ -82,6 +106,11 @@ const TransactionLog = () => {
                                     <div>Buy Price: ${row.buy_price}</div>
                                     <div>Buy Date: {row.buy_date}</div>
                                     <div>Notes: {row.notes}</div>
+                                    <div>
+                                        <button onClick={() => handleDeleteBuyTransaction(row.transaction_id)}>
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))
@@ -101,8 +130,14 @@ const TransactionLog = () => {
                                     <div>Stock Symbol: {row.stock_symbol}</div>
                                     <div>Stock Name: {row.stock_name}</div>
                                     <div>Sell Price: ${row.sell_price}</div>
+                                    <div>Basis: ${row.basis}</div>
                                     <div>Sell Date: {row.sell_date}</div>
                                     <div>Notes: {row.notes}</div>
+                                    <div>
+                                        <button onClick={() => handleDeleteSellTransaction(row.receipt_id)}>
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))
@@ -114,4 +149,3 @@ const TransactionLog = () => {
 };
 
 export default TransactionLog;
-

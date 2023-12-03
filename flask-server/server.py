@@ -188,6 +188,31 @@ def logBuyDailyInfo(username):
     ).scalar()
 
     return count + 1
+
+def calculate_basis_by_date(username, stock_symbol, buy_date, shares_sold, sell_price):
+    # Fetch the buy transaction for the given user, stock, and buy date
+    buy_transaction = db.session.query(LogBuy).filter(
+        LogBuy.username == username,
+        LogBuy.stock_symbol == stock_symbol,
+        LogBuy.buy_date == buy_date
+    ).first()
+
+    if buy_transaction:
+        shares_bought = buy_transaction.shares
+        buy_price = buy_transaction.buy_price
+        
+        # Convert shares_sold and sell_price to numeric types if they are strings
+        try:
+            shares_sold = float(shares_sold)
+            sell_price = float(sell_price)
+        except ValueError:
+            return None  # Return None if conversion fails
+
+        # Calculate basis using the formula (shares_sold * sell_price) - (shares_bought * buy_price)
+        basis = (shares_sold * sell_price) - (shares_bought * buy_price)
+        return basis
+
+    return None
   
 @app.route("/TrackSell", methods=["POST", "GET"])
 def logSell():
@@ -201,9 +226,13 @@ def logSell():
             stock_name = request.json["stockName"]
             sell_price = request.json["sellPrice"]
             sell_date = request.json["sellDate"]
+            buy_date = request.json["buyDate"]
             notes = request.json["notes"]
 
-            #logSellDaily = logSellDailyInfo(username)
+            # If basis is not provided, calculate basis based on the buy date
+            if not basis:
+                basis = calculate_basis_by_date(username, stock_symbol, buy_date, shares, sell_price)
+
             current_date = date.today()
             receipt_id = "B-" + str(current_date) + "-" + str(uuid4())
 
@@ -231,8 +260,7 @@ def logSell():
                 "sellDate": sell_date,
                 "notes": notes
             })
-            
-            
+
     if request.method == "GET":
         with open('.usr', 'r') as file:
             username = file.read()
@@ -247,6 +275,36 @@ def logSell():
             return jsonify(sell_transactions_data)
 
     return jsonify({"message": "Invalid request or error occurred"})
+
+
+@app.route("/deleteBuyTransaction", methods=["POST"])
+def delete_buy_transaction():
+    if request.method == "POST":
+        transaction_id = request.args.get('transaction_id')
+
+        buy_transaction = LogBuy.query.filter_by(transaction_id=transaction_id).first()
+        if buy_transaction:
+            db.session.delete(buy_transaction)
+            db.session.commit()
+            return jsonify({"message": f"Buy transaction with ID {transaction_id} deleted successfully"})
+        else:
+            return jsonify({"error": f"No buy transaction found with ID {transaction_id}"})
+
+@app.route("/deleteSellTransaction", methods=["POST"])
+def delete_sell_transaction():
+    if request.method == "POST":
+        receipt_id = request.args.get('receipt_id')
+
+        sell_transaction = LogSell.query.filter_by(receipt_id=receipt_id).first()
+        if sell_transaction:
+            db.session.delete(sell_transaction)
+            db.session.commit()
+            return jsonify({"message": f"Sell transaction with ID {receipt_id} deleted successfully"})
+        else:
+            return jsonify({"error": f"No sell transaction found with ID {receipt_id}"})
+
+
+
 def logSellDailyInfo(username):
     current_date = date.today()
     tempID = "S-" + str(current_date) + "%"
@@ -448,6 +506,7 @@ def search_stock_value():
                 return jsonify({'error': 'Stock not found in the Yahoo Finance API'}), 404
     else:
         return jsonify({'error': 'Invalid request'}), 400
+
 
 
 if __name__ == '__main__':
