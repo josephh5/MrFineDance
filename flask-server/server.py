@@ -506,8 +506,37 @@ def search_stock_value():
                 return jsonify({'error': 'Stock not found in the Yahoo Finance API'}), 404
     else:
         return jsonify({'error': 'Invalid request'}), 400
+    
+@app.route('/getTotalAmountSpent', methods=['GET'])
+def getTotalAmountSpent():
+    try:
+        username = read_username_from_file()
+        log_entries = LogBuy.query.filter_by(username=username).all()
+        total_amount_spent = sum(entry.shares * entry.buy_price for entry in log_entries)
+        return jsonify({'totalAmountSpent': total_amount_spent})
+    except Exception as e:
+        # Handle exceptions
+        return jsonify({'error': str(e)})
 
+@app.route('/getTotalAmountMade', methods=['GET'])
+def getTotalAmountMade():
+    try:
+        username = read_username_from_file()
+        log_entries = LogSell.query.filter_by(username=username).all()
+        total_amount_made = sum(entry.shares * entry.sell_price for entry in log_entries)
+        return jsonify({'totalAmountMade': total_amount_made})
+    except Exception as e:
+        # Handle exceptions
+        return jsonify({'error': str(e)})
 
+def read_username_from_file():
+    try:
+        with open('.usr', 'r') as file:
+            username = file.read().strip()
+        return username
+    except Exception as e:
+        # Handle exceptions
+        return None
 
 if __name__ == '__main__':
     with open('.usr', 'w') as file:
