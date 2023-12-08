@@ -11,19 +11,16 @@ npm (usually comes with Node.js)
 Setting up the Server (Flask)
 Navigate to the Server Directory:
 
-bash
-Copy code
+
 cd path/to/flask-server
 Set up a Virtual Environment (Optional but recommended):
 
-bash
-Copy code
+
 python -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 Install Dependencies:
 
-bash
-Copy code
+
 pip install Flask
 Additional Configurations:
 Check config.py for any specific configurations that might be needed.
